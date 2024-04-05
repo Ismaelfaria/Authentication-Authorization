@@ -1,5 +1,6 @@
-﻿/*using ApiToken.Dtos;
+﻿using ApiToken.Dtos;
 using ApiToken.Repositories.Interfaces;
+using ApiToken.Services.Interfaces;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -7,45 +8,50 @@ using System.Text;
 
 namespace ApiToken.Services
 {
-    public class TokenTEST
+    public class TokenTEST : ITokenService
     {
-        private readonly IConfiguration _configuration;
-        private readonly IUserRepository _userRepository;
+        private readonly IConfiguration _c;
+        private readonly IUserRepository _r;
 
-        public TokenTEST(IConfiguration configuration, IUserRepository userRepository)
+        public TokenTEST(IConfiguration c, IUserRepository r)
         {
-            _configuration = configuration;
-            _userRepository = userRepository;
+            _c = c;
+            _r = r;
         }
 
-        public string GerarToken(LoginDto user)
+        public string GenerateToken(LoginDto l)
         {
-            var userDatabase = _userRepository.GetByUserName(user.UserName);
-            if(userDatabase.UserName != user.UserName || userDatabase.Password != user.Password)
+            var u = _r.GetByUserName(l.UserName);
+
+            if(u.UserName != l.UserName || u.Password != l.Password)
             {
                 return string.Empty;
             }
 
-            var secretyKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? string.Empty));
-            var issuer = _configuration["Jwt:Issuer"];
-            var audience = _configuration["Jwt:Audience"];
+            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_c["Jwt:Key"] ?? string.Empty));
+            var Issuer = _c["Jwt:Issuer"];
+            var Audience = _c["Jwt:Audience"];
 
-            var signingCredential = new SigningCredentials(secretyKey, SecurityAlgorithms.HmacSha256);
+            var signingCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
 
-            var tokenOption = new JwtSecurityToken(
-                issuer:issuer,
-                audience:audience,
+            var tokenJWT = new JwtSecurityToken(
+
+                issuer: Issuer,
+                audience: Audience,
                 claims: new[]
                 {
-                    new Claim(ClaimTypes.Name, userDatabase.UserName),
-                    new Claim(ClaimTypes.Role, userDatabase.Role),
+                    new Claim(ClaimTypes.Name, u.UserName),
+                    new Claim(ClaimTypes.Role, u.Role),
                 },
-                expires:DateTime.Now.AddMinutes(2),
-                signingCredentials:signingCredential);
+                signingCredentials: signingCredentials,
+                expires: DateTime.Now.AddMinutes(30)
+                );
 
-            var token = new JwtSecurityTokenHandler().WriteToken(tokenOption);
+            var token = new JwtSecurityTokenHandler().WriteToken(tokenJWT);
 
             return token;
+
+
         }
     }
-}*/
+}

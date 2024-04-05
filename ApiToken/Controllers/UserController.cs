@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ApiToken.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Menager")]
     [Route("api/Estudo")]
     [ApiController]
     public class UserController : ControllerBase
