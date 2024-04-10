@@ -30,7 +30,7 @@ builder.Services.AddSwaggerGen(op =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Colocar o token apos a palavra BEARER"
+        Description = "Colocar o token apos a palavre BEARER",
     });
     op.AddSecurityRequirement(new OpenApiSecurityRequirement {
         {
@@ -38,12 +38,12 @@ builder.Services.AddSwaggerGen(op =>
             {
                 Reference = new OpenApiReference
                 {
-                    Type=ReferenceType.SecurityScheme,
+                    Type = ReferenceType.SecurityScheme,
                     Id="Bearer"
                 }
             },
             Array.Empty<string>()
-        }});
+        } });
 });
 builder.Services.AddAuthentication(x =>
 {
