@@ -25,21 +25,21 @@ builder.Services.AddSwaggerGen(op =>
 {
     op.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
     {
-        Name = "Authentication",
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Colocar o token apos a palavre BEARER",
+        Name="Authentication",
+        Type=SecuritySchemeType.ApiKey,
+        Scheme="Bearer",
+        BearerFormat="JWT",
+        In=ParameterLocation.Header,
+        Description="colocar o token apos a palavra BEARER"
     });
     op.AddSecurityRequirement(new OpenApiSecurityRequirement {
         {
             new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference
-                {
+                Reference =new OpenApiReference{
+
                     Type = ReferenceType.SecurityScheme,
-                    Id="Bearer"
+                    Id = "Bearer"
                 }
             },
             Array.Empty<string>()
@@ -57,8 +57,6 @@ builder.Services.AddAuthentication(x =>
 
         };
     });
-   
-
 
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
