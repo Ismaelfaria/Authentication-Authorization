@@ -10,43 +10,40 @@ namespace ApiToken.Services
 {
     public class TokenService : ITokenService
     {
-
         private readonly IConfiguration _conf;
-        private readonly IUserSevice _get;
+        private readonly IUserSevice _user;
 
-        public TokenService(IConfiguration c, IUserSevice s)
+        public TokenService(IConfiguration conf, IUserSevice user)
         {
-            _conf = c;
-            _get = s;
+            _conf = conf;
+            _user = user;
         }
-
         public string GenerateToken(LoginDto login)
         {
-            var userData = _get.GetByUserName(login.UserName);
+            var userDatabase = _user.GetByUserName(login.UserName);
 
-            if (userData == null)
+            if(userDatabase == null)
             {
                 return string.Empty;
             }
 
-            var secretyKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_conf["Jwt:Ket"]));
+            var secretyKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_conf["Jwt:Key"]));
             var issuer = _conf["Jwt:Issuer"];
             var audience = _conf["Jwt:Audience"];
 
             var signingCredentials = new SigningCredentials(secretyKey, SecurityAlgorithms.HmacSha256);
 
             var tokenOptions = new JwtSecurityToken(
-
                 issuer: issuer,
                 audience: audience,
                 claims: new Claim[]
                 {
-                    new Claim(ClaimTypes.Name, userData.UserName),
-                    new Claim(ClaimTypes.Role, userData.Role),
+                    new Claim(ClaimTypes.Name, userDatabase.UserName),
+                    new Claim(ClaimTypes.Role, userDatabase.Role),
                 },
-                expires:DateTime.Now.AddHours(2),
-                signingCredentials:signingCredentials);
-
+                expires: DateTime.Now.AddHours(2),
+                signingCredentials: signingCredentials
+                );
 
             var token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
 
