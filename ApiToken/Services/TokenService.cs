@@ -1,4 +1,5 @@
 ﻿
+
 using ApiToken.Dtos;
 using ApiToken.Services.Interfaces;
 using Microsoft.IdentityModel.Tokens;
@@ -10,39 +11,34 @@ namespace ApiToken.Services
 {
     public class TokenService : ITokenService
     {
-        private readonly IConfiguration _conf;
-        private readonly IUserSevice _user;
+        private readonly IConfiguration conf;
+        private readonly IUserSevice user;
 
-        public TokenService(IConfiguration conf, IUserSevice user)
-        {
-            _conf = conf;
-            _user = user;
-        }
         public string GenerateToken(LoginDto login)
         {
-            var userDatabase = _user.GetByUserName(login.UserName);
-
-            if(userDatabase == null)
+            var userCheck = user.GetByUserName(login.UserName);
+            if (userCheck.UserName != login.UserName || userCheck.Password != login.Password)
             {
                 return string.Empty;
             }
 
-            var secretyKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_conf["Jwt:Key"]));
-            var issuer = _conf["Jwt:Issuer"];
-            var audience = _conf["Jwt:Audience"];
 
-            var signingCredentials = new SigningCredentials(secretyKey, SecurityAlgorithms.HmacSha256);
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(conf["Jwt:Key"]));
+            var issuer = conf["Jwt:Issuer"];
+            var audience = conf["Jwt:Audience"];
+
+            var singCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var tokenOptions = new JwtSecurityToken(
                 issuer: issuer,
                 audience: audience,
-                claims: new Claim[]
+                claims: new[]
                 {
-                    new Claim(ClaimTypes.Name, userDatabase.UserName),
-                    new Claim(ClaimTypes.Role, userDatabase.Role),
+                    new Claim(ClaimTypes.Role, userCheck.Role),
+                    new Claim(ClaimTypes.Name, userCheck.UserName)
                 },
                 expires: DateTime.Now.AddHours(2),
-                signingCredentials: signingCredentials
+                signingCredentials: singCredentials
                 );
 
             var token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
