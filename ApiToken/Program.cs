@@ -22,36 +22,39 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddSwaggerGen(op => {
-
-    op.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+builder.Services.AddSwaggerGen(op =>
+{
+    op.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Name = "Autorização",
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer",
+        Name = "Authentication",
         BearerFormat = "JWT",
+        Scheme = "Bearer",
+        Type = SecuritySchemeType.ApiKey,
         In = ParameterLocation.Header,
-        Description = "Colocar o token apos a palavra 'Bearer'",
+        Description = "Colocar o token apos escrever a palavra 'Bearer' "
     });
 
-    op.AddSecurityRequirement(new OpenApiSecurityRequirement {
+    op.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
         {
-            new OpenApiSecurityScheme
+        new OpenApiSecurityScheme
+        {
+            Reference = new OpenApiReference
             {
-                Reference = new OpenApiReference() {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-    }});
+                Id = "Bearer",
+                Type = ReferenceType.Schema
+            }
+        },
+          Array.Empty<string>()
+        }
+    });
 });
-
 builder.Services.AddAuthentication(x =>
 {
-    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
 })
+    
     .AddJwtBearer(op =>
     {
         op.TokenValidationParameters = new TokenValidationParameters
@@ -60,14 +63,11 @@ builder.Services.AddAuthentication(x =>
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["JWT:Issuer"],
-            ValidAudience = builder.Configuration["JWT:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]))
+            ValidIssuer = builder.Configuration["Jwt:issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
         };
-    })
-    
-    ;
-
+    });
 
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
